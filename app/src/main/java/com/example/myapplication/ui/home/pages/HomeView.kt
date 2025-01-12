@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.home.pages
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,19 +11,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,14 +53,11 @@ fun HomeScreen(
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold (
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier,
         topBar = {
-            CostumeTopAppBar(
-                title = DestinasiHome.titleRes,
-                canNavigateBack = false,
-                scrollBehavior = scrollBehavior,
-                onRefresh = {
-                    viewModel.getMhs()
+            TopAppBar(
+                title = {
+                    Text("Home")
                 }
             )
         },
@@ -75,7 +77,6 @@ fun HomeScreen(
             modifier = Modifier.padding(innerPadding),
             onDetailClick = onDetailClick,
             onDeleteClick = {
-                viewModel.deleteMhs(it.nim)
                 viewModel.getMhs()
             }
         )
@@ -86,7 +87,7 @@ fun HomeScreen(
 fun MhsLayout(
     mahasiswa: List<Mahasiswa>,
     modifier: Modifier = Modifier,
-    onDetailClick: (Mahasiswa) -> Unit,
+    onDetailClick: (String) -> Unit,
     onDeleteClick: (Mahasiswa) -> Unit = {}
 ) {
     LazyColumn(
@@ -95,18 +96,19 @@ fun MhsLayout(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(
-            items = mhs,
+            items = mahasiswa,
             itemContent = { mhs ->
                 MhsCard(
                     mahasiswa = mhs,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onDetailClick(mhs) },
+                        .clickable { },
                     onDeleteClick = {
                         onDeleteClick(mhs)
                     }
                 )
             }
+        )
     }
 }
 
@@ -126,7 +128,7 @@ fun HomeStatus(
                mahasiswa = homeUiState.data,
                modifier = modifier.fillMaxSize(),
                onDetailClick = {
-                   onDetailClick(it.nim)
+                   onDetailClick(it)
                },
                onDeleteClick = {
                    onDeleteClick(it)
@@ -145,7 +147,8 @@ fun HomeStatus(
         }
         is HomeUiState.Error -> OnError(retryAction,
             modifier = modifier.fillMaxSize(),
-            )
+            message = homeUiState.e.message ?: "Error"
+        )
     }
 }
 
@@ -158,31 +161,6 @@ fun OnLoading(modifier: Modifier = Modifier) {
 @Composable
 fun OnError(
     retryAction: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.error), contentDescription = ""
-        )
-        Text(
-            text = stringResource(R.string.loading_failed),
-            modifier = Modifier.padding(16.dp)
-        )
-        Button(
-            onClick = retryAction
-        ) {
-            Text(stringResource(R.string.retry))
-        }
-    }
-}
-
-@Composable
-fun OnError(
-    retryAction: () -> Unit,
     modifier: Modifier = Modifier,
     message: String
 ) {
@@ -192,7 +170,7 @@ fun OnError(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Terjadi Kesalahan : $message",
+            text = "Terjadi Kesalahan: $message",
             modifier = Modifier.padding(16.dp)
         )
         Button(
