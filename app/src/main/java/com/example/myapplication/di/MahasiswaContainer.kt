@@ -5,7 +5,7 @@ import com.example.myapplication.repository.RepositoryMhs
 import com.google.firebase.firestore.FirebaseFirestore
 
 interface AppContainer{
-    val Repository: RepositoryMhs
+    val repositoryMhs: RepositoryMhs
 }
 
 class MahasiswaContainer : AppContainer{
