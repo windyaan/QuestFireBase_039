@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.home.viewmodel
 
+import android.net.http.HttpException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,6 +11,7 @@ import com.example.myapplication.repository.RepositoryMhs
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class HomeViewModel (
     private val repositoryMhs: RepositoryMhs
@@ -44,7 +46,7 @@ class HomeViewModel (
         viewModelScope.launch {
             try {
                 repositoryMhs.deleteMhs(mahasiswa)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 mhsUiState = HomeUiState.Error(e)
             }
         }

@@ -36,12 +36,15 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.model.Mahasiswa
 import com.example.myapplication.ui.PenyediaViewModel
+import com.example.myapplication.ui.customwidget.CostumeTopAppBar
 import com.example.myapplication.ui.home.viewmodel.HomeUiState
 import com.example.myapplication.ui.home.viewmodel.HomeViewModel
+import com.example.myapplication.ui.navigation.DestinasiHome
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,11 +56,14 @@ fun HomeScreen(
 ){
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold (
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("Home")
+            CostumeTopAppBar(
+                title = DestinasiHome.titleRes,
+                canNavigateBack = false,
+                scrollBehavior = scrollBehavior,
+                onRefresh = {
+                    viewModel.getMhs()
                 }
             )
         },
@@ -75,7 +81,9 @@ fun HomeScreen(
             homeUiState = viewModel.mhsUiState,
             retryAction = { viewModel.getMhs() },
             modifier = Modifier.padding(innerPadding),
-            onDetailClick = onDetailClick,
+            onDetailClick = {
+                viewModel.getMhs()
+            },
             onDeleteClick = {
                 viewModel.deleteMhs(it)
             }
@@ -87,7 +95,7 @@ fun HomeScreen(
 fun MhsLayout(
     mahasiswa: List<Mahasiswa>,
     modifier: Modifier = Modifier,
-    onDetailClick: (String) -> Unit,
+    onDetailClick: (Mahasiswa) -> Unit = {},
     onDeleteClick: (Mahasiswa) -> Unit = {}
 ) {
     LazyColumn(
@@ -102,7 +110,7 @@ fun MhsLayout(
                     mahasiswa = mhs,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { },
+                        .clickable { onDetailClick(mhs) },
                     onDeleteClick = {
                         onDeleteClick(mhs)
                     }
@@ -117,7 +125,7 @@ fun HomeStatus(
     homeUiState: HomeUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
-    onDetailClick: (String) -> Unit,
+    onDetailClick: (Mahasiswa) -> Unit = {},
     onDeleteClick: (Mahasiswa) -> Unit = {},
 ){
     var deleteConfirmationRequired by rememberSaveable { mutableStateOf<Mahasiswa?>(null) }
@@ -222,6 +230,10 @@ fun MhsCard(
             )
             Text(
                 text = mahasiswa.alamat,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = mahasiswa.judulSkripsi,
                 style = MaterialTheme.typography.titleMedium
             )
         }
